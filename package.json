@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "name": "monorepo",
+  "workspaces": [
+    "backend",
+    "frontend"
+  ],
+  "scripts": {
+    "precommit": "lerna run --parallel precommit",
+    "test": "lerna run --parallel test"
+  },
+  "devDependencies": {
+    "husky": "^1.3.1",
+    "lerna": "^3.13.1",
+    "npm-run-all": "^4.1.5"
+  },
+  "engines": {
+    "node": ">= 10.15.2",
+    "yarn": ">= 1.13.0"
+  }
+}
