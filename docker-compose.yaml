@@ -1,0 +1,37 @@
+version: "3"
+
+services:
+  postgres:
+    image: postgres:11.2-alpine
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: monorepo
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+    hostname: postgres
+    user: postgres
+  
+  api:
+    image: openjdk:11.0.2
+    restart: unless-stopped
+    ports:
+      - "${API_PORT:-8080}:8080"
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: monorepo
+      POSTGRES_PASSWORD: postgres
+      GRADLE_USER_HOME: /work/.gradle
+    working_dir: /work
+    volumes:
+      - "./backend:/work"
+    command: ./gradlew --console plain bootRun
+    depends_on:
+      - postgres
+
+volumes:
+  pgdata:

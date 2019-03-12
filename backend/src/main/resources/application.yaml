@@ -1,0 +1,18 @@
+spring:
+  datasource:
+    postgres:
+      driverClassName: org.postgresql.Driver
+      url: "jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/monorepo"
+      username: "${POSTGRES_USER:monorepo}"
+      password: "${POSTGRES_PASSWORD:postgres}"
+
+  devtools:
+    livereload:
+      enabled: false
+
+  flyway:
+    enabled: false
+
+gcp:
+  firebaseDatabaseUrl: "${FIREBASE_DATABASE_URL}"
+  serviceAccountCredential: "${GCP_SERVICE_ACCOUNT_CREDENTIAL}"
