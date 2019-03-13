@@ -15,6 +15,9 @@ class Routes(private val todoHandler: TodoHandler) {
                 accept(MediaType.APPLICATION_JSON_UTF8).nest {
                     GET("", todoHandler::listTodos)
                     POST("", todoHandler::addTodo)
+                    GET("/{id}", todoHandler::findTodoById)
+                    DELETE("/{id}", todoHandler::deleteTodo)
+                    PUT("/{id}", todoHandler::updateTodoStatus)
                 }
             }
         }

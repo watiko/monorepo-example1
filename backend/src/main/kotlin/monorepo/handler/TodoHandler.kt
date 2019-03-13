@@ -1,7 +1,11 @@
 package monorepo.handler
 
 import am.ik.yavi.core.Validator
+import arrow.core.Left
+import arrow.core.Option
+import arrow.core.Right
 import monorepo.repository.Todo
+import monorepo.repository.TodoId
 import monorepo.repository.TodoRepository
 import org.springframework.http.MediaType
 import org.springframework.stereotype.Component
@@ -11,6 +15,9 @@ import reactor.core.publisher.Mono
 import reactor.core.scheduler.Schedulers
 
 data class CreateTodoReq(val title: String)
+data class DeleteTodoReq(val id: TodoId)
+data class UpdateTodoStatusReq(val id: TodoId, val done: Boolean)
+data class FindTodoByIdReq(val id: TodoId)
 
 @Component
 class TodoHandler(private val todoRepository: TodoRepository) {
@@ -20,6 +27,7 @@ class TodoHandler(private val todoRepository: TodoRepository) {
         .build()
 
     fun badRes(error: Map<String, Any>) = ServerResponse.badRequest().syncBody(error)
+    fun notFound() = ServerResponse.notFound().build()
     fun <T : Any> ok(data: T) = ServerResponse.ok()
         .contentType(MediaType.APPLICATION_JSON_UTF8)
         .syncBody(data)
@@ -47,6 +55,53 @@ class TodoHandler(private val todoRepository: TodoRepository) {
                         )
                         ok(todo)
                     })
+            }
+    }
+
+    fun updateTodoStatus(req: ServerRequest): Mono<ServerResponse> {
+        return req.bodyToMono(UpdateTodoStatusReq::class.java)
+            .publishOn(Schedulers.elastic())
+            .map { updateReq ->
+                val count = todoRepository.updateTodoStatus(updateReq.id, updateReq.done)
+                when (count) {
+                    1 -> Right("update success")
+                    else -> Left("update target not found")
+                }
+                    .mapLeft { mapOf("details" to it) }
+            }
+            .flatMap { either ->
+                either.fold(::badRes, ::ok)
+            }
+    }
+
+    fun deleteTodo(req: ServerRequest): Mono<ServerResponse> {
+        return req.bodyToMono(DeleteTodoReq::class.java)
+            .publishOn(Schedulers.elastic())
+            .map { deleteReq ->
+                // 後で考える
+                val todo = todoRepository.findById(deleteReq.id)
+                Option.fromNullable(todo)
+                    .toEither { "todoId(${deleteReq.id}) not found" }
+                    .mapLeft { mapOf("details" to it) }
+                    .map(todoRepository::delete)
+            }
+            .flatMap { either ->
+                either.fold({ notFound() }, ::ok)
+            }
+    }
+
+    fun findTodoById(req: ServerRequest): Mono<ServerResponse> {
+        return req.bodyToMono(FindTodoByIdReq::class.java)
+            .publishOn(Schedulers.elastic())
+            .map { findByIdReq ->
+                // 後で考える
+                val todo = todoRepository.findById(findByIdReq.id)
+                Option.fromNullable(todo)
+                    .toEither { "todoId(${findByIdReq.id}) not found" }
+                    .mapLeft { mapOf("details" to it) }
+            }
+            .flatMap { either ->
+                either.fold({ notFound() }, ::ok)
             }
     }
 
