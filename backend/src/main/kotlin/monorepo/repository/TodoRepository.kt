@@ -1,7 +1,17 @@
 package monorepo.repository
 
 import monorepo.annotation.DomaRepository
-import org.seasar.doma.*
+import org.seasar.doma.Dao
+import org.seasar.doma.Delete
+import org.seasar.doma.Domain
+import org.seasar.doma.Entity
+import org.seasar.doma.GeneratedValue
+import org.seasar.doma.GenerationType
+import org.seasar.doma.Id
+import org.seasar.doma.Insert
+import org.seasar.doma.Select
+import org.seasar.doma.Table
+import org.seasar.doma.Update
 import org.seasar.doma.experimental.Sql
 import org.seasar.doma.jdbc.Result
 import org.springframework.transaction.annotation.Transactional
