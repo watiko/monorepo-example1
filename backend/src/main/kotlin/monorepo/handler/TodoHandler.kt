@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.reactive.function.server.ServerRequest
 import org.springframework.web.reactive.function.server.ServerResponse
 import reactor.core.publisher.Mono
+import reactor.core.publisher.switchIfEmpty
 import reactor.core.scheduler.Schedulers
 
 data class CreateTodoReq(val title: String)
@@ -75,7 +76,10 @@ class TodoHandler(private val todoRepository: TodoRepository) {
     }
 
     fun deleteTodo(req: ServerRequest): Mono<ServerResponse> {
-        return req.bodyToMono(DeleteTodoReq::class.java)
+        return Mono.justOrEmpty(req.pathVariable("id"))
+            .map { idStr ->
+                DeleteTodoReq(TodoId(idStr.toInt()))
+            }
             .publishOn(Schedulers.elastic())
             .map { deleteReq ->
                 // 後で考える
@@ -91,7 +95,11 @@ class TodoHandler(private val todoRepository: TodoRepository) {
     }
 
     fun findTodoById(req: ServerRequest): Mono<ServerResponse> {
-        return req.bodyToMono(FindTodoByIdReq::class.java)
+        // この部分は微妙なのでリクエストパラメータとかも含めてバリデーションする仕組みが必要かも
+        return Mono.justOrEmpty(req.pathVariable("id"))
+            .map { idStr ->
+                FindTodoByIdReq(TodoId(idStr.toInt()))
+            }
             .publishOn(Schedulers.elastic())
             .map { findByIdReq ->
                 // 後で考える
@@ -103,6 +111,7 @@ class TodoHandler(private val todoRepository: TodoRepository) {
             .flatMap { either ->
                 either.fold({ notFound() }, ::ok)
             }
+            .switchIfEmpty { badRes(mapOf("details" to "could not bind parameter")) }
     }
 
     fun listTodos(req: ServerRequest) = Mono
