@@ -12,14 +12,38 @@
     "react-scripts": "2.1.8",
     "typescript": "3.3.3333"
   },
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^1.4.2",
+    "eslint": "^5.15.2",
+    "eslint-config-prettier": "^4.1.0",
+    "eslint-plugin-prettier": "^3.0.1",
+    "eslint-plugin-react": "^7.12.4",
+    "lint-staged": "^8.1.5",
+    "prettier": "^1.16.4"
+  },
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "prettier": "prettier --config ./prettier.config.js",
+    "_prettier": "yarn run prettier *.js \"src/**/*.{ts,tsx,json,css,scss}\"",
+    "prettier-format": "yarn run _prettier --write",
+    "eslint": "eslint *.js \"src/**/*.{ts,tsx}\"",
+    "eslint-fix": "yarn run eslint --fix",
+    "format": "run-s prettier-format eslint-fix",
+    "format-check": "run-p eslint"
   },
-  "eslintConfig": {
-    "extends": "react-app"
+  "lint-staged": {
+    "src/**/*.{json,css,scss}": [
+      "yarn run prettier --write",
+      "git add"
+    ],
+    "src/**/*.{ts,tsx}": [
+      "yarn run prettier --write",
+      "yarn run eslint-fix",
+      "git add"
+    ]
   },
   "browserslist": [
     ">0.2%",
